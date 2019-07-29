@@ -1,0 +1,212 @@
+#!/bin/bash
+
+# ---------------------------------------------------------------------------- #
+# GLOBAL VARIABLES (in script)                                                 #
+# ---------------------------------------------------------------------------- #
+
+NAME="${!#}"
+
+CONFNAME="$NAME.conf"
+
+EMAIL="webmaster@localhost"
+
+URL=""
+
+LOGPATH=""
+
+PORT=""
+
+WEBROOT=""
+
+TEMPLATE="/etc/vhost/template.conf"
+
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+# ---------------------------------------------------------------------------- #
+# FUNCTIONS                                                                    #
+# ---------------------------------------------------------------------------- #
+
+echo-red() { 
+	echo -e "${RED}$1${NC}"
+}
+echo-green() { 
+	echo -e "${GREEN}$1${NC}"
+}
+echo-yellow() { 
+	echo -e "${YELLOW}$1${NC}"
+}
+
+verify-sudo() {
+    if [ "$EUID" -ne 0 ]
+      then echo-red "Execute as root eg: sudo vhost"
+      exit 1
+    fi
+}
+
+vhost-usage() {
+
+    echo -e "${YELLOW}"
+    cat <<"USAGE"
+
+Uso: vhost [options] <name of vhost>
+    -h|--help   help
+    -url        url of website (e.g. test.com)
+    -rm         remove a vhost
+    -r          web root (e.g. /var/www/test.com)
+    -email      email to webmaster (default "webmaster@localhost")
+    -ls         list all vhosts
+    -p          sets the application's port
+    -install    install the script globally
+
+USAGE
+
+    echo-yellow "Examples:"
+    echo
+    echo-green "vhost -r ~/projetos/test -url test.com test.com"
+    echo
+    echo-green "vhost -rm test.com test.com"
+
+    echo -e "${NC}"
+    exit 0
+
+}
+
+vhost-install() {
+    verify-sudo;
+
+    CONFDIR="/etc/vhost"
+
+    if [ ! -e  "$CONFDIR" ]; then
+        mkdir "$CONFDIR"
+    fi
+
+    cp -r $(pwd)/. $CONFDIR
+    ln -s -f $CONFDIR/vhost /usr/bin/vhost
+
+    echo-green "Script installed! use: vhost"
+    exit 0
+}
+
+vhost-remove() {
+    verify-sudo;
+
+    echo-yellow "Deactivating $CONFNAME virtual host."
+    a2dissite $CONFNAME
+
+    rm "/etc/apache2/sites-available/$CONFNAME"
+    service apache2 reload
+	
+	echo-green "$CONFNAME Deleted!"
+	
+    exit 0
+}
+
+vhost-list() {
+
+    echo-yellow "Virtual hosts avaliable:"
+    ls -1 "/etc/apache2/sites-available/"
+
+    echo-green "Virtual hosts enabled:"
+    ls -1 "/etc/apache2/sites-enabled/"
+
+    exit 0
+}
+
+vhost-createFolder() {
+    verify-sudo;
+    if [ ! -d "$WEBROOT" ]; then
+        echo-green "Creating $WEBROOT directory"
+        mkdir -p $WEBROOT
+    fi
+}
+
+vhost-createLogPath() {
+    verify-sudo;
+    if [ ! -d "$LOGPATH" ]; then
+        echo-green "Creating $LOGPATH directory"
+        mkdir -p $LOGPATH
+    fi
+}
+
+vhost-template() {
+    verify-sudo;
+    echo-green "Verifying template..."
+
+    if [ ! -f "$TEMPLATE" ]; then
+        echo-red "template not found, verifying global template..."
+
+        if [ ! -f "/etc/vhost/template.conf" ]; then
+            echo-red "$TEMPLATE not found!"
+            exit 1
+        fi
+    fi
+}
+
+vhost-generate-vhost() {
+    verify-sudo;
+    echo-green "Creating $NAME virtual host with webroot: $WEBROOT"
+
+    APACHE_CONF="/etc/apache2/sites-available/$CONFNAME"
+
+    cp $TEMPLATE $APACHE_CONF
+
+    sed -i 's#template.email#'$EMAIL'#g' $APACHE_CONF
+    sed -i 's#template.url#'$URL'#g' $APACHE_CONF
+    sed -i 's#template.webroot#'$WEBROOT'#g' $APACHE_CONF
+    sed -i 's#template.name#'$NAME'#g' $APACHE_CONF
+    sed -i 's#template.logpath#'$LOGPATH'#g' $APACHE_CONF
+    sed -i 's#template.port#'$PORT'#g' $APACHE_CONF
+
+    if [ ! -f $APACHE_CONF  ]; then
+        echo-red "Fail, aborting..."
+        exit 1
+    fi
+}
+
+vhost-enable-reload() {
+    verify-sudo;
+    a2ensite $CONFNAME
+
+    service apache2 reload
+
+    echo-green "Virtual host $CONFNAME created with webroot $WEBROOT for url http://$URL"
+}
+
+while [ $1 ]; do
+    case "$1" in
+        '-ls') vhost-list;;
+        '-h'|'--help') vhost-usage;;
+        '-rm')
+            URL="$2"
+            vhost-remove
+            ;;
+        '-r') WEBROOT="$2";;
+        '-t') TEMPLATE="$2";;
+        '-p') PORT="$2";;
+        '-url') URL="$2";;
+        '-email') EMAIL="$2";;
+        '-install') vhost-install;;
+    esac
+    shift
+done
+
+LOGPATH="/var/log/apache2/${URL}";
+
+if [ "$URL" == "" ]; then
+    echo-red "You need to specify the options"
+    vhost-usage;
+    exit 0;
+fi
+
+
+vhost-createFolder;
+vhost-createLogPath;
+vhost-template;
+vhost-generate-vhost;
+vhost-enable-reload;
+
+exit 0
