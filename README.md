@@ -8,9 +8,10 @@ Rebuild of [vhost-manager](https://github.com/rubensfernandes/vhost-manager)
 First install script
 
 ```sh
-$ git clone https://gitlab.com/CodingMachine/apache-vhost-manager.git
-$ cd apache-vhost-manager
-$ sudo ./vhost -install
+git clone https://gitlab.com/CodingMachine/apache-vhost-manager.git
+cd apache-vhost-manager
+chmod 777 vhost
+./vhost -install
 ```
 
 **Add vhost test.com**
