@@ -8,7 +8,7 @@ Rebuild of [vhost-manager](https://github.com/rubensfernandes/vhost-manager)
 First install script
 
 ```sh
-git clone https://gitlab.com/CodingMachine/apache-vhost-manager.git
+git clone https://github.com/CodingMachineDev/ApacheVHostManager.git
 cd apache-vhost-manager
 chmod 777 vhost
 ./vhost -install
@@ -16,13 +16,13 @@ chmod 777 vhost
 
 **Add vhost test.com**
 ```sh
-$ sudo vhost -r /var/www/test.com -url 'test.com' 'test-site'
+$ sudo vhost -r /var/www/test.com -url 'test.com' 'test.com'
 ```
 >'test-site' is a name of config ex: /etc/apache2/sites-available/test-site.conf
 
 To use a specific template
 ```sh
-$ sudo vhost -r ~/projects/mysite/web -url 'mysite.dev' -t ~/template.conf 'mysite'
+$ sudo vhost -r /var/www/test-site.com -url 'test-site.com' -t ~/template.conf 'test-site'
 ```
 - **-r** is a directory
 - **-url** is the url to load
