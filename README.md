@@ -1,6 +1,6 @@
 # Apache Vhost Manager
 
-Rebuild of [vhost-manager](https://github.com/rubensfernandes/vhost-manager)
+Forked & Modified From [vhost-manager](https://github.com/rubensfernandes/vhost-manager)
 
 
 #Usage
@@ -30,7 +30,7 @@ $ sudo vhost -r /var/www/test-site.com -url 'test-site.com' -t ~/template.conf '
 - **-p** the port which the website will be hosted
 - **test-site** is name of config to set in /etc/apache2/sites-available/mysite.conf
 
->Templates should be use parameters
+>Templates should use the following parameters:
 * template.url
 * template.webroot
 * template.email
