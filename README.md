@@ -2,8 +2,7 @@
 
 Forked & Modified From [vhost-manager](https://github.com/rubensfernandes/vhost-manager)
 
-
-#Usage
+# Usage
 
 First install script
 
@@ -18,19 +17,20 @@ chmod 777 vhost
 ```sh
 $ sudo vhost -r /var/www/test.com -url 'test.com' 'test.com'
 ```
->'test-site' is a name of config ex: /etc/apache2/sites-available/test-site.conf
+> 'test-site' is a name of config ex: /etc/apache2/sites-available/test-site.conf
 
 To use a specific template
 ```sh
 $ sudo vhost -r /var/www/test-site.com -url 'test-site.com' -t ~/template.conf 'test-site'
 ```
+
 - **-r** is a directory
 - **-url** is the url to load
 - **-t** is the template file
 - **-p** the port which the website will be hosted
 - **test-site** is name of config to set in /etc/apache2/sites-available/mysite.conf
 
->Templates should use the following parameters:
+> Templates should use the following parameters:
 * template.url
 * template.webroot
 * template.email
